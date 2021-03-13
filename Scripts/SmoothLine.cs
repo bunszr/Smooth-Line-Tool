@@ -193,8 +193,8 @@ public class SmoothLine : MonoBehaviour
     float GetPossibleMaxNodeToAncDistance(int index)
     {
         GetBeforeCurrNextIndies(index);
-        Vector3 dirA = nodes[index - 1] - nodes[index];
-        Vector3 dirB = nodes[index + 1] - nodes[index];
+        Vector3 dirA = nodes[ThreeIndies[0]] - nodes[ThreeIndies[1]];
+        Vector3 dirB = nodes[ThreeIndies[2]] - nodes[ThreeIndies[1]];
         float previousEdgeDst = dirA.magnitude * .97f - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
         float nextEdgeDst = dirB.magnitude * .97f - anchors[ThreeIndies[2]].EdgeDst;
 

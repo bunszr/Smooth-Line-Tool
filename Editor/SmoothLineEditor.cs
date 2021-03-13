@@ -119,7 +119,7 @@ public class SmoothLineEditor : Editor
     void DrawInspectorForRadius()
     {
         // Inspectordan radius'u ayarlamak için (Gerçek radius değeri değildir)
-        lastSelectedRadius = EditorGUILayout.FloatField("Radius Last Selected", lastSelectedRadius);
+        lastSelectedRadius = EditorGUILayout.FloatField("Radius Last Selected", lastSelectedRadius.RoundTo(.1f));
         if (lastSelectedOldRadius != lastSelectedRadius)
         {
             smoothLine.UpdateRadius(lastSelectedRadiusIndex, lastSelectedRadius);
