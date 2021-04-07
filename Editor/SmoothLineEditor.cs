@@ -77,6 +77,7 @@ public class SmoothLineEditor : Editor
 
             if (GUILayout.Button("Reset"))
             {
+                Undo.RecordObject(smoothLine, "Reset Smooth Line");
                 smoothLine.Reset(movingSpace);
                 SceneView.RepaintAll();
             }
