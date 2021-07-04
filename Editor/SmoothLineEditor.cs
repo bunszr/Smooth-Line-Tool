@@ -377,8 +377,6 @@ public class SmoothLineEditor : Editor
         isRepaintInspector = true;
     }
 
-
-
     void LeftMouseUp()
     {
         info.selectedNodeIndex = -1;

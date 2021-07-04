@@ -503,6 +503,71 @@ PrefabInstance:
       propertyPath: smoothPoints.Array.data[0].z
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[1].maxNodeToAncDistance
+      value: 12.348574
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[1].bisectorAngle
+      value: 44.598392
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[1].radius
+      value: 2.3777282
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[1].position.x
+      value: -1.5747659
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[1].position.y
+      value: 1.8908927
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[1].position.z
+      value: 7.6390085
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[5].maxNodeToAncDistance
+      value: 5.2645144
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[6].maxNodeToAncDistance
+      value: 6.913676
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[6].bisectorAngle
+      value: 68.62286
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[6].radius
+      value: 2.7693326
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[6].position.x
+      value: 4.420445
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[6].position.y
+      value: -0.71951914
+      objectReference: {fileID: 0}
+    - target: {fileID: 5200902855272456115, guid: 5dcbd37f28580a345899f40d86a1d5cd,
+        type: 3}
+      propertyPath: anchors.Array.data[6].position.z
+      value: 4.94519
+      objectReference: {fileID: 0}
     - target: {fileID: 5200902855272456125, guid: 5dcbd37f28580a345899f40d86a1d5cd,
         type: 3}
       propertyPath: numObject
