@@ -6,6 +6,7 @@ public class SmoothLine : MonoBehaviour
 {
     int[] ThreeIndies = new int[3]; // Önceki, şimdiki, bir sonraki indexler
     Vector3[] ThreeNodes = new Vector3[3]; // Önceki, şimdiki, bir sonraki düğümler
+    const float eps = .01f;
     public Action OnPathChangedEvent;
 
     public readonly float DefaultControlRadius = 1f;
@@ -27,7 +28,9 @@ public class SmoothLine : MonoBehaviour
     public List<Vector3> SmoothPoints => smoothPoints;
     public int NumNodes => nodes.Count;
     public int LastNodeIndex => nodes.Count - 1;
-    public float TotalPathDistance { get; private set; }
+
+    [SerializeField, HideInInspector] float totalPathDistance;
+    public float TotalPathDistance => totalPathDistance;
 
     List<Vector3> initialTransportedNodes = new List<Vector3>();
     bool transportWithTransform;
@@ -95,7 +98,7 @@ public class SmoothLine : MonoBehaviour
 
     void UpdatePathInfos()
     {
-        TotalPathDistance = GetTotalPathDistance();
+        totalPathDistance = GetTotalPathDistance();
         pathInfos.Clear();
         int numPathInfo = smoothPoints.Count / SplitSegmentCount;
         if (numPathInfo <= 2)
@@ -361,21 +364,11 @@ public class SmoothLine : MonoBehaviour
     public Vector3 GetDirectionAtTime(float currentTime, Vector3 currentPos, Vector3 transformForward, MoveType moveType = MoveType.Stop)
     {
         currentTime = currentTime.GetNewTimeWithMoveType(moveType);
-        float nextTime = currentTime + .02f;
-        if (nextTime >= 1)
-        {
-            if (moveType == MoveType.Loop)
-            {
-                nextTime = .002f;
-                return (GetPointAtTime(nextTime, MoveType.None) - currentPos).normalized;
-            }
-            else if (moveType == MoveType.Stop)
-            {
-                return IsClose ? (GetPointAtTime(.05f, MoveType.None) - currentPos).normalized : transformForward;
-            }
-            return transformForward;
-        }
-        return (GetPointAtTime(nextTime, MoveType.None) - currentPos).normalized;
+        Vector3 dir = currentTime == 0 ? GetPointAtTime(eps) - nodes[0]
+                    : currentTime == 1 ? smoothPoints[smoothPoints.Count - 1] - GetPointAtTime(1 - eps)
+                    : GetPointAtTime(Mathf.Clamp01(currentTime + eps)) - GetPointAtTime(Mathf.Clamp01(currentTime - eps));
+        dir.Normalize();
+        return dir;
     }
 
     public Vector3 GetDirectionAtDistanceTravelled(float currentDstTravelled, Vector3 currentPos, Vector3 transformForward, MoveType moveType = MoveType.Stop)
