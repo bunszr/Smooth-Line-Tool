@@ -1,56 +1,60 @@
 using UnityEngine;
+using SmoothLineCreation;
 
-// time(percent) ile hareket ettiriyoruz.
-public class ChangeablePathFollower : MonoBehaviour
+namespace SmoothLineExamples
 {
-    public SmoothLine smoothLine;
-    public MoveType moveType;
-
-    float time;
-    int dir = 1;
-    public float speed = 3;
-
-    Vector3[] defaultNodes;
-
-    private void Start()
+    // time(percent) ile hareket ettiriyoruz.
+    public class ChangeablePathFollower : MonoBehaviour
     {
-        smoothLine.OnPathChangedEvent += OnPathChanged;
-        transform.position = smoothLine.SmoothPoints[0];
-        defaultNodes = smoothLine.Nodes.ToArray();
-    }
+        public SmoothLine smoothLine;
+        public MoveType moveType;
 
-    private void Update()
-    {
-        time += Time.deltaTime * dir * speed;
-        transform.position = smoothLine.GetPointAtTime(time, moveType);
-        Vector3 lookDir = smoothLine.GetDirectionAtTime(time, transform.position, transform.forward, moveType);
-        transform.rotation = Quaternion.LookRotation(lookDir);
+        float time;
+        int dir = 1;
+        public float speed = 3;
 
-        DoNodesAnim();
-    }
+        Vector3[] defaultNodes;
 
-    void DoNodesAnim()
-    {
-        for (int i = 0; i < defaultNodes.Length; i++)
+        private void Start()
         {
-            Vector3 newPos = defaultNodes[i];
-            newPos.y = defaultNodes[i].y + Mathf.PingPong(Time.time * .4f * (i + 1), 1.5f);
-            smoothLine.UpdateNode(i, newPos);
+            smoothLine.OnPathChangedEvent += OnPathChanged;
+            transform.position = smoothLine.SmoothPoints[0];
+            defaultNodes = smoothLine.Nodes.ToArray();
         }
-        smoothLine.UpdateWhenPathChanges();
-    }
 
-    public void OnPathChanged()
-    {
-        if (moveType == MoveType.Stop && time >= 1)
-            return;
-        else if (moveType == MoveType.Reverse)
+        private void Update()
         {
-            if (time >= 1)
-                dir = -1;
-            else if (time < 0)
-                dir = 1;
+            time += Time.deltaTime * dir * speed;
+            transform.position = smoothLine.GetPointAtTime(time, moveType);
+            Vector3 lookDir = smoothLine.GetDirectionAtTime(time, transform.position, transform.forward, moveType);
+            transform.rotation = Quaternion.LookRotation(lookDir);
+
+            DoNodesAnim();
         }
-        time = smoothLine.GetClosestTimeOnPath(transform.position, moveType);
+
+        void DoNodesAnim()
+        {
+            for (int i = 0; i < defaultNodes.Length; i++)
+            {
+                Vector3 newPos = defaultNodes[i];
+                newPos.y = defaultNodes[i].y + Mathf.PingPong(Time.time * .4f * (i + 1), 1.5f);
+                smoothLine.UpdateNode(i, newPos);
+            }
+            smoothLine.UpdateWhenPathChanges();
+        }
+
+        public void OnPathChanged()
+        {
+            if (moveType == MoveType.Stop && time >= 1)
+                return;
+            else if (moveType == MoveType.Reverse)
+            {
+                if (time >= 1)
+                    dir = -1;
+                else if (time < 0)
+                    dir = 1;
+            }
+            time = smoothLine.GetClosestTimeOnPath(transform.position, moveType);
+        }
     }
 }

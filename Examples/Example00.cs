@@ -1,34 +1,38 @@
 using UnityEngine;
+using SmoothLineCreation;
 
-public class Example00 : MonoBehaviour
+namespace SmoothLineExamples
 {
-    public SmoothLine smoothLine;
-    public MoveType moveType;
-
-    float time;
-    public float speed = 3;
-
-    private void Start()
+    public class Example00 : MonoBehaviour
     {
-        transform.position = smoothLine.SmoothPoints[0];
-        smoothLine.TransportWithTransform = true;
-    }
+        public SmoothLine smoothLine;
+        public MoveType moveType;
 
-    private void Update()
-    {
-        time += Time.deltaTime * speed;
-        transform.position = smoothLine.GetPointAtTime(time, moveType);
-        Vector3 lookDir = smoothLine.GetDirectionAtTime(time, transform.position, transform.forward, moveType);
-        transform.rotation = Quaternion.LookRotation(lookDir);
+        float time;
+        public float speed = 3;
 
-        DoAnim();
-    }
+        private void Start()
+        {
+            transform.position = smoothLine.SmoothPoints[0];
+            smoothLine.TransportWithTransform = true;
+        }
 
-    void DoAnim()
-    {
-        smoothLine.transform.Rotate(Vector3.right * Time.deltaTime * 20);
-        smoothLine.UpdateAllNodeWithTransform();
-        // smoothLine.ConvertToSmoothCurve(); //smoothline nesnesinin rotasyonu ve posizyonu ile oynanırsa "UpdateWhenPathChanges" yerine buda çağrılabilir
-        smoothLine.UpdateWhenPathChanges();
+        private void Update()
+        {
+            time += Time.deltaTime * speed;
+            transform.position = smoothLine.GetPointAtTime(time, moveType);
+            Vector3 lookDir = smoothLine.GetDirectionAtTime(time, transform.position, transform.forward, moveType);
+            transform.rotation = Quaternion.LookRotation(lookDir);
+
+            DoAnim();
+        }
+
+        void DoAnim()
+        {
+            smoothLine.transform.Rotate(Vector3.right * Time.deltaTime * 20);
+            smoothLine.UpdateAllNodeWithTransform();
+            // smoothLine.ConvertToSmoothCurve(); //smoothline nesnesinin rotasyonu ve posizyonu ile oynanırsa "UpdateWhenPathChanges" yerine buda çağrılabilir
+            smoothLine.UpdateWhenPathChanges();
+        }
     }
 }
