@@ -2,14 +2,15 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 
-namespace SmoothLineCreation
+namespace SmoothLineTool
 {
-    public class SmoothLine : MonoBehaviour
+    public class SLSmoothLine : MonoBehaviour
     {
         int[] ThreeIndies = new int[3]; // Önceki, şimdiki, bir sonraki indexler
         Vector3[] ThreeNodes = new Vector3[3]; // Önceki, şimdiki, bir sonraki düğümler
         const float eps = .01f;
         public Action OnPathChangedEvent;
+        public SLMovingSpace movingSpace;
 
         public readonly float DefaultControlRadius = 1f;
         const int SplitSegmentCount = 10;
@@ -17,13 +18,14 @@ namespace SmoothLineCreation
         [Range(0, 40), HideInInspector] public int resolation = 5;
         [HideInInspector] public VisualSetting visualSetting;
 
-        [SerializeField, HideInInspector] List<PathInfo> pathInfos = new List<PathInfo>();
-        [SerializeField, HideInInspector] List<Vector3> nodes = new List<Vector3>();
-        [SerializeField, HideInInspector] List<Anchor> anchors = new List<Anchor>();
+        [SerializeField, HideInInspector] List<SLPathInfo> pathInfos = new List<SLPathInfo>();
+        [SerializeField] List<Vector3> nodes = new List<Vector3>();
+        [SerializeField] List<Anchor> anchors = new List<Anchor>();
         [SerializeField, HideInInspector] List<Vector3> smoothPoints = new List<Vector3>();
 
         [HideInInspector] public bool useSnap;
         [HideInInspector] public float snapValue = .5f;
+        [HideInInspector] public float allAnchorRadius = 5f;
 
         public List<Vector3> Nodes => nodes;
         public List<Anchor> Anchors => anchors;
@@ -105,8 +107,8 @@ namespace SmoothLineCreation
             int numPathInfo = smoothPoints.Count / SplitSegmentCount;
             if (numPathInfo <= 2)
             {
-                pathInfos.Add(new PathInfo(0, 0, 0));
-                pathInfos.Add(new PathInfo(1, TotalPathDistance, smoothPoints.Count - 1));
+                pathInfos.Add(new SLPathInfo(0, 0, 0));
+                pathInfos.Add(new SLPathInfo(1, TotalPathDistance, smoothPoints.Count - 1));
                 return;
             }
 
@@ -117,13 +119,13 @@ namespace SmoothLineCreation
                 if (i % SplitSegmentCount == 0)
                 {
                     float percent = totalDst / TotalPathDistance;
-                    pathInfos.Add(new PathInfo(percent, totalDst, i));
+                    pathInfos.Add(new SLPathInfo(percent, totalDst, i));
                     indexOfPathInfo++;
                 }
 
                 totalDst += Vector3.Distance(smoothPoints[i], smoothPoints[i + 1]);
             }
-            pathInfos.Add(new PathInfo(1, TotalPathDistance, smoothPoints.Count - 1));
+            pathInfos.Add(new SLPathInfo(1, TotalPathDistance, smoothPoints.Count - 1));
         }
 
         public void ConvertToSmoothCurve()
@@ -160,8 +162,8 @@ namespace SmoothLineCreation
 
             if (anchors[middleIndex].nodeToAnchorDistance > DefaultControlRadius)
             {
-                Vector3 closestPointFromDirA = Utility.ClosestPointOnLineSegment(center, nodeA, nodeB);
-                Vector3 closestPointFromDirB = Utility.ClosestPointOnLineSegment(center, nodeB, nodeC);
+                Vector3 closestPointFromDirA = SLUtility.ClosestPointOnLineSegment(center, nodeA, nodeB);
+                Vector3 closestPointFromDirB = SLUtility.ClosestPointOnLineSegment(center, nodeB, nodeC);
 
                 radius = Vector3.Distance(closestPointFromDirA, center);
                 Vector3 axis = Vector3.Cross(dirB, dirA);
@@ -187,8 +189,10 @@ namespace SmoothLineCreation
         float GetPossibleMaxNodeToAncDistance(int index, Vector3 dirA, Vector3 dirB, out float bisectorAngle)
         {
             GetBeforeCurrNextIndies(index);
-            float previousEdgeDst = dirA.magnitude * .97f - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
-            float nextEdgeDst = dirB.magnitude * .97f - anchors[ThreeIndies[2]].EdgeDst;
+            // float previousEdgeDst = dirA.magnitude * .97f - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
+            // float nextEdgeDst = dirB.magnitude * .97f - anchors[ThreeIndies[2]].EdgeDst;
+            float previousEdgeDst = dirA.magnitude - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
+            float nextEdgeDst = dirB.magnitude - anchors[ThreeIndies[2]].EdgeDst;
 
             bisectorAngle = Vector3.Angle(dirA, dirA.normalized + dirB.normalized);
             float maxNodeToAncDistance = Mathf.Min(previousEdgeDst, nextEdgeDst) / Mathf.Cos(bisectorAngle * Mathf.Deg2Rad);
@@ -200,8 +204,11 @@ namespace SmoothLineCreation
             GetBeforeCurrNextIndies(index);
             Vector3 dirA = nodes[ThreeIndies[0]] - nodes[ThreeIndies[1]];
             Vector3 dirB = nodes[ThreeIndies[2]] - nodes[ThreeIndies[1]];
-            float previousEdgeDst = dirA.magnitude * .97f - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
-            float nextEdgeDst = dirB.magnitude * .97f - anchors[ThreeIndies[2]].EdgeDst;
+            // float previousEdgeDst = dirA.magnitude * .97f - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
+            // float nextEdgeDst = dirB.magnitude * .97f - anchors[ThreeIndies[2]].EdgeDst;
+            float previousEdgeDst = dirA.magnitude - anchors[ThreeIndies[0]].EdgeDst; // .97f = noktalar birbirinin üzerine binmesin diye
+            float nextEdgeDst = dirB.magnitude - anchors[ThreeIndies[2]].EdgeDst;
+
 
             float bisectorAngle = Vector3.Angle(dirA, dirA.normalized + dirB.normalized);
             float maxNodeToAncDistance = Mathf.Min(previousEdgeDst, nextEdgeDst) / Mathf.Cos(bisectorAngle * Mathf.Deg2Rad);
@@ -240,20 +247,20 @@ namespace SmoothLineCreation
             return Vector3.Cross(ThreeNodes[0] - ThreeNodes[1], ThreeNodes[2] - ThreeNodes[1]);
         }
 
-        public void InitializeSmoothLine(MovingSpace movingSpace)
+        public void InitializeSmoothLine()
         {
             TransportWithTransform = false;
             if (nodes.Count == 0)
             {
                 nodes.Clear();
                 anchors.Clear();
-                if (movingSpace == MovingSpace.XY)
+                if (movingSpace == SLMovingSpace.XY)
                 {
                     nodes.Add(Vector3.left * 5);
                     nodes.Add(Vector3.up * 5);
                     nodes.Add(Vector3.right * 5);
                 }
-                else if (movingSpace == MovingSpace.XZ)
+                else if (movingSpace == SLMovingSpace.XZ)
                 {
                     nodes.Add(Vector3.left * 5);
                     nodes.Add(Vector3.forward * 5);
@@ -266,10 +273,10 @@ namespace SmoothLineCreation
             ConvertToSmoothCurve();
         }
 
-        public void Reset(MovingSpace movingSpace)
+        public void Reset()
         {
             nodes.Clear();
-            InitializeSmoothLine(movingSpace);
+            InitializeSmoothLine();
         }
 
         public void AddNode(Vector3 point)
@@ -351,19 +358,19 @@ namespace SmoothLineCreation
             anchors[anchorIndex] = tempAnchor;
         }
 
-        public Vector3 GetPointAtTime(float time, MoveType moveType = MoveType.Stop)
+        public Vector3 GetPointAtTime(float time, SLMoveType moveType = SLMoveType.Stop)
         {
             time = time.GetNewTimeWithMoveType(moveType);
-            return PathUtility.GetPointAtTime(time, pathInfos, smoothPoints, TotalPathDistance, moveType);
+            return SLPathUtility.GetPointAtTime(time, pathInfos, smoothPoints, TotalPathDistance, moveType);
         }
 
-        public Vector3 GetPointAtTravelledDistance(float dst, MoveType moveType = MoveType.Stop)
+        public Vector3 GetPointAtTravelledDistance(float dst, SLMoveType moveType = SLMoveType.Stop)
         {
             float t = dst / TotalPathDistance;
             return GetPointAtTime(t, moveType);
         }
 
-        public Vector3 GetDirectionAtTime(float currentTime, Vector3 currentPos, Vector3 transformForward, MoveType moveType = MoveType.Stop)
+        public Vector3 GetDirectionAtTime(float currentTime, Vector3 currentPos, Vector3 transformForward, SLMoveType moveType = SLMoveType.Stop)
         {
             currentTime = currentTime.GetNewTimeWithMoveType(moveType);
             Vector3 dir = currentTime == 0 ? GetPointAtTime(eps) - nodes[0]
@@ -373,20 +380,20 @@ namespace SmoothLineCreation
             return dir;
         }
 
-        public Vector3 GetDirectionAtDistanceTravelled(float currentDstTravelled, Vector3 currentPos, Vector3 transformForward, MoveType moveType = MoveType.Stop)
+        public Vector3 GetDirectionAtDistanceTravelled(float currentDstTravelled, Vector3 currentPos, Vector3 transformForward, SLMoveType moveType = SLMoveType.Stop)
         {
             float t = currentDstTravelled / TotalPathDistance;
             return GetDirectionAtTime(t, currentPos, transformForward, moveType);
         }
 
-        public float GetClosestTimeOnPath(Vector3 worldPoint, MoveType moveType)
+        public float GetClosestTimeOnPath(Vector3 worldPoint, SLMoveType moveType)
         {
             return GetClosestDistanceTravelled(worldPoint, moveType) / TotalPathDistance;
         }
 
-        public float GetClosestDistanceTravelled(Vector3 worldPoint, MoveType moveType)
+        public float GetClosestDistanceTravelled(Vector3 worldPoint, SLMoveType moveType)
         {
-            return PathUtility.GetClosestDistanceTravelled(worldPoint, pathInfos, smoothPoints, TotalPathDistance);
+            return SLPathUtility.GetClosestDistanceTravelled(worldPoint, pathInfos, smoothPoints, TotalPathDistance);
         }
 
 #if UNITY_EDITOR

@@ -1,18 +1,18 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace SmoothLineCreation
+namespace SmoothLineTool
 {
-    public static class PathUtility
+    public static class SLPathUtility
     {
-        static PathInfo[] InterpolatingPathInfos = new PathInfo[2];
+        static SLPathInfo[] InterpolatingPathInfos = new SLPathInfo[2];
 
-        public delegate float OnPathInfoVariableDelegate(PathInfo pathInfo);
+        public delegate float OnPathInfoVariableDelegate(SLPathInfo pathInfo);
         static OnPathInfoVariableDelegate GetPercentDelegate = x => x.percent;
         static OnPathInfoVariableDelegate GetDistanceDelegate = x => x.distance;
         static OnPathInfoVariableDelegate GetSmoothIndexDelegate = x => x.smoothIndex;
 
-        public static PathInfo[] GetTwoPathInfoInRange(List<PathInfo> pathInfos, float value, OnPathInfoVariableDelegate pathInfoDelegateA, OnPathInfoVariableDelegate pathInfoDelegateB)
+        public static SLPathInfo[] GetTwoPathInfoInRange(List<SLPathInfo> pathInfos, float value, OnPathInfoVariableDelegate pathInfoDelegateA, OnPathInfoVariableDelegate pathInfoDelegateB)
         {
             int left = 0;
             int right = pathInfos.Count - 1;
@@ -36,28 +36,28 @@ namespace SmoothLineCreation
             return InterpolatingPathInfos;
         }
 
-        public static float GetNewTimeWithMoveType(this float time, MoveType moveType)
+        public static float GetNewTimeWithMoveType(this float time, SLMoveType moveType)
         {
             switch (moveType)
             {
-                case MoveType.Loop:
+                case SLMoveType.Loop:
                     time = time % 1;
                     break;
-                case MoveType.Reverse:
+                case SLMoveType.Reverse:
                     time = Mathf.PingPong(time, 1);
                     break;
-                case MoveType.Stop:
+                case SLMoveType.Stop:
                     time = Mathf.Clamp01(time);
                     break;
             }
             return time;
         }
 
-        public static void SetNewTimeForChangeablePath(ref float value, float length, ref int dir, MoveType moveType)
+        public static void SetNewTimeForChangeablePath(ref float value, float length, ref int dir, SLMoveType moveType)
         {
-            if (moveType == MoveType.Stop && value >= length)
+            if (moveType == SLMoveType.Stop && value >= length)
                 return;
-            else if (moveType == MoveType.Reverse)
+            else if (moveType == SLMoveType.Reverse)
             {
                 if (value >= length)
                     dir = -1;
@@ -66,9 +66,9 @@ namespace SmoothLineCreation
             }
         }
 
-        public static Vector3 GetPointAtTime(float time, List<PathInfo> pathInfos, List<Vector3> smoothPoints, float totalPathDistance, MoveType moveType)
+        public static Vector3 GetPointAtTime(float time, List<SLPathInfo> pathInfos, List<Vector3> smoothPoints, float totalPathDistance, SLMoveType moveType)
         {
-            PathUtility.GetTwoPathInfoInRange(pathInfos, time, GetPercentDelegate, GetPercentDelegate);
+            SLPathUtility.GetTwoPathInfoInRange(pathInfos, time, GetPercentDelegate, GetPercentDelegate);
             float totalDst = InterpolatingPathInfos[0].distance;
             float reachedDst = totalPathDistance * time;
 
@@ -85,14 +85,14 @@ namespace SmoothLineCreation
             return Vector3.zero;
         }
 
-        public static float GetClosestDistanceTravelled(Vector3 worldPoint, List<PathInfo> pathInfos, List<Vector3> smoothPoints, float totalPathDst)
+        public static float GetClosestDistanceTravelled(Vector3 worldPoint, List<SLPathInfo> pathInfos, List<Vector3> smoothPoints, float totalPathDst)
         {
             float closestDst = Mathf.Infinity;
             int bestIndex = -1;
             Vector3 closestPointOnLineSegment = Vector3.zero;
             for (int i = 0; i < smoothPoints.Count - 1; i++)
             {
-                Vector3 pointOnLineSegment = Utility.ClosestPointOnLineSegment(worldPoint, smoothPoints[i], smoothPoints[i + 1]);
+                Vector3 pointOnLineSegment = SLUtility.ClosestPointOnLineSegment(worldPoint, smoothPoints[i], smoothPoints[i + 1]);
                 float sqrDstFromClosestPointOnLineSegmentToWorldPoint = (worldPoint - pointOnLineSegment).sqrMagnitude;
                 if (sqrDstFromClosestPointOnLineSegmentToWorldPoint < closestDst)
                 {

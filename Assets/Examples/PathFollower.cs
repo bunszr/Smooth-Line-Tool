@@ -1,12 +1,12 @@
 using UnityEngine;
-using SmoothLineCreation;
+using SmoothLineTool;
 
 namespace SmoothLineExamples
 {
     public class PathFollower : MonoBehaviour
     {
-        public SmoothLine smoothLine;
-        public MoveType moveType;
+        public SLSmoothLine smoothLine;
+        public SLMoveType moveType;
 
         float distanceTravelled;
         public float speed = 3;

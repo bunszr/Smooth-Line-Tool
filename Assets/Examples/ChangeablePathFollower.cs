@@ -1,13 +1,13 @@
 using UnityEngine;
-using SmoothLineCreation;
+using SmoothLineTool;
 
 namespace SmoothLineExamples
 {
     // time(percent) ile hareket ettiriyoruz.
     public class ChangeablePathFollower : MonoBehaviour
     {
-        public SmoothLine smoothLine;
-        public MoveType moveType;
+        public SLSmoothLine smoothLine;
+        public SLMoveType moveType;
 
         float time;
         int dir = 1;
@@ -45,9 +45,9 @@ namespace SmoothLineExamples
 
         public void OnPathChanged()
         {
-            if (moveType == MoveType.Stop && time >= 1)
+            if (moveType == SLMoveType.Stop && time >= 1)
                 return;
-            else if (moveType == MoveType.Reverse)
+            else if (moveType == SLMoveType.Reverse)
             {
                 if (time >= 1)
                     dir = -1;

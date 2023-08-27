@@ -1,13 +1,13 @@
 using UnityEngine;
-using SmoothLineCreation;
+using SmoothLineTool;
 
 namespace SmoothLineExamples
 {
     // distanceTravelled(alınan yol) ile hareket ettiriyoruz.
     public class ChangeablePathFollowerV2 : MonoBehaviour
     {
-        public SmoothLine smoothLine;
-        public MoveType moveType;
+        public SLSmoothLine smoothLine;
+        public SLMoveType moveType;
 
         float distanceTravelled;
         public float speed = 3;
@@ -45,9 +45,9 @@ namespace SmoothLineExamples
 
         public void OnPathChanged()
         {
-            if (moveType == MoveType.Stop && distanceTravelled >= smoothLine.TotalPathDistance)
+            if (moveType == SLMoveType.Stop && distanceTravelled >= smoothLine.TotalPathDistance)
                 return;
-            else if (moveType == MoveType.Reverse)
+            else if (moveType == SLMoveType.Reverse)
             {
                 if (distanceTravelled >= smoothLine.TotalPathDistance)
                     dir = -1;

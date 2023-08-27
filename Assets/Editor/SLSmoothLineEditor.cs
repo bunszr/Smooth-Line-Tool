@@ -1,23 +1,22 @@
 using UnityEngine;
 using UnityEditor;
-using SmoothLineCreation;
+using SmoothLineTool;
 
 namespace SmoothLineEditorNamespace
 {
-    [CustomEditor(typeof(SmoothLine))]
-    public class SmoothLineEditor : Editor
+    [CustomEditor(typeof(SLSmoothLine))]
+    public class SLSmoothLineEditor : Editor
     {
         const float ClosestSqrDstToSelection = .15f;
         static readonly string[] MovingSpaceName = { "XY", "XZ" };
         const string helpInfo = "Ctrl+Sol Tık = Düğümü Sil\nShift+Sol Tık = Yeni düğüm ekle\nSpace = Hareket uzayını değiştir";
 
-        SmoothLine smoothLine;
+        SLSmoothLine smoothLine;
         Info info;
 
         bool isRepaint = false;
         bool isRepaintInspector = false;
         Vector3 pressedPoint;
-        MovingSpace movingSpace;
         bool transportWithTransformInEditor = false;
         bool isCloseInEditor;
         bool openVisualSettingPanel = false;
@@ -28,15 +27,15 @@ namespace SmoothLineEditorNamespace
         double lastClickTime;
         bool isDoubleClickNode;
 
-        public delegate Vector3 OnPosDelegate(int i, SmoothLine smooth);
+        public delegate Vector3 OnPosDelegate(int i, SLSmoothLine smooth);
         static OnPosDelegate OnPosNodeDelegate = (i, smooth) => smooth.Nodes[i];
         static OnPosDelegate OnPosAnchorDelegate = (i, smooth) => smooth.Anchors[i].position;
 
         void OnEnable()
         {
             info = new Info();
-            smoothLine = (SmoothLine)target;
-            smoothLine.InitializeSmoothLine(movingSpace);
+            smoothLine = (SLSmoothLine)target;
+            smoothLine.InitializeSmoothLine();
             isCloseInEditor = smoothLine.IsClose;
         }
 
@@ -60,7 +59,7 @@ namespace SmoothLineEditorNamespace
             if (!transportWithTransformInEditor)
             {
                 smoothLine.resolation = EditorGUILayout.IntSlider("Resolation", smoothLine.resolation, 1, 40);
-                movingSpace = (MovingSpace)EditorGUILayout.Popup("Moving Space", (int)movingSpace, MovingSpaceName);
+                smoothLine.movingSpace = (SLMovingSpace)EditorGUILayout.Popup("Moving Space", (int)smoothLine.movingSpace, MovingSpaceName);
 
                 smoothLine.useSnap = EditorGUILayout.Toggle("Use Snap", smoothLine.useSnap);
                 if (smoothLine.useSnap)
@@ -81,7 +80,18 @@ namespace SmoothLineEditorNamespace
                 if (GUILayout.Button("Reset"))
                 {
                     Undo.RecordObject(smoothLine, "Reset Smooth Line");
-                    smoothLine.Reset(movingSpace);
+                    smoothLine.Reset();
+                    SceneView.RepaintAll();
+                }
+
+                smoothLine.allAnchorRadius = EditorGUILayout.FloatField("All Anchor Radius", smoothLine.allAnchorRadius);
+                if (GUILayout.Button("Updated All Radius"))
+                {
+                    Undo.RecordObject(smoothLine, "Updated All Radius Smooth Line");
+                    for (int i = 1; i < smoothLine.Anchors.Count - 1; i++)
+                    {
+                        smoothLine.UpdateRadius(i, smoothLine.allAnchorRadius);
+                    }
                     SceneView.RepaintAll();
                 }
             }
@@ -164,7 +174,7 @@ namespace SmoothLineEditorNamespace
             //Düğümün hareket etme düzlemi
             if (info.selectedNodeIndex != -1 && !isDoubleClickNode)
             {
-                Vector3 size = movingSpace == MovingSpace.XY ? new Vector3(5, 5, 0) : new Vector3(5, 0, 5);
+                Vector3 size = smoothLine.movingSpace == SLMovingSpace.XY ? new Vector3(5, 5, 0) : new Vector3(5, 0, 5);
                 Vector3 stepSize = size / 10;
                 for (int i = 1; i <= 10; i++)
                     Handles.DrawWireCube(pressedPoint, i * stepSize);
@@ -216,8 +226,8 @@ namespace SmoothLineEditorNamespace
         void HandleInput(Event guiEvent)
         {
             Ray ray = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition);
-            float planeHeight = movingSpace == MovingSpace.XY ? smoothLine.Nodes[smoothLine.LastNodeIndex].z : smoothLine.Nodes[smoothLine.LastNodeIndex].y;
-            Vector3 mousePos = MouseUtility.GetMousePosWithMoveSpace(ray, guiEvent.mousePosition, movingSpace, planeHeight);
+            float planeHeight = smoothLine.movingSpace == SLMovingSpace.XY ? smoothLine.Nodes[smoothLine.LastNodeIndex].z : smoothLine.Nodes[smoothLine.LastNodeIndex].y;
+            Vector3 mousePos = SLMouseUtility.GetMousePosWithMoveSpace(ray, guiEvent.mousePosition, smoothLine.movingSpace, planeHeight);
 
             if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.modifiers == EventModifiers.Shift)
             {
@@ -331,7 +341,7 @@ namespace SmoothLineEditorNamespace
                 {
                     Undo.RecordObject(smoothLine, "Move Point");
                     float enter = 0;
-                    Vector3 inNormal = movingSpace == MovingSpace.XY ? Vector3.forward : Vector3.up;
+                    Vector3 inNormal = smoothLine.movingSpace == SLMovingSpace.XY ? Vector3.forward : Vector3.up;
                     Plane plane = new Plane(inNormal, pressedPoint);
                     if (plane.Raycast(ray, out enter))
                     {
@@ -371,7 +381,7 @@ namespace SmoothLineEditorNamespace
             Vector3 dirFromControlToNode = smoothLine.Anchors[index].position - smoothLine.Nodes[index];
             float radius = Vector3.Dot(dirFromControlToNode, dirFromMouseToNode) > 0 && magFromMouseToNode > smoothLine.DefaultControlRadius ? magFromMouseToNode : smoothLine.DefaultControlRadius;
 
-            SmoothLine.Anchor tempAnchor = smoothLine.Anchors[index];
+            SLSmoothLine.Anchor tempAnchor = smoothLine.Anchors[index];
             tempAnchor.nodeToAnchorDistance = Mathf.Clamp(radius, 1, smoothLine.Anchors[index].maxNodeToAncDistance);
             smoothLine.Anchors[index] = tempAnchor;
 
@@ -388,7 +398,7 @@ namespace SmoothLineEditorNamespace
 
         void ChangeSpace()
         {
-            movingSpace = (MovingSpace)(1 - (int)movingSpace);
+            smoothLine.movingSpace = (SLMovingSpace)(1 - (int)smoothLine.movingSpace);
         }
 
         public int GetClosestIndex(Ray ray, OnPosDelegate onPosDelegate)
@@ -396,7 +406,7 @@ namespace SmoothLineEditorNamespace
             Vector3 rayDir = ray.GetPoint(1000);
             for (int i = 0; i < smoothLine.Anchors.Count; i++)
             {
-                Vector3 closestPoint = Utility.ClosestPointOnLineSegment(onPosDelegate(i, smoothLine), ray.origin, rayDir);
+                Vector3 closestPoint = SLUtility.ClosestPointOnLineSegment(onPosDelegate(i, smoothLine), ray.origin, rayDir);
                 if ((closestPoint - onPosDelegate(i, smoothLine)).sqrMagnitude < ClosestSqrDstToSelection)
                     return i;
             }
@@ -415,7 +425,7 @@ namespace SmoothLineEditorNamespace
                     Vector2 pA = HandleUtility.WorldToGUIPoint(smoothLine.Nodes[i]);
                     Vector2 pB = HandleUtility.WorldToGUIPoint(smoothLine.Nodes[nextIndex]);
                     float distance = HandleUtility.DistancePointToLineSegment(mouseScreenPos, pA, pB);
-                    Vector2 screenClosestPoint = Utility.ClosestPointOnLineSegment(mouseScreenPos, pA, pB);
+                    Vector2 screenClosestPoint = SLUtility.ClosestPointOnLineSegment(mouseScreenPos, pA, pB);
                     if (distance < 20)
                     {
                         info.SetSegmentInfo(i, nextIndex, Vector2.Distance(pA, screenClosestPoint) / Vector2.Distance(pA, pB));

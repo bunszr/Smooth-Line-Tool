@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using SmoothLineCreation;
+using SmoothLineTool;
 
 namespace SmoothLineExamples
 {
     public class Example01 : MonoBehaviour
     {
-        public SmoothLine smoothLine;
+        public SLSmoothLine smoothLine;
         public float speed = 3;
 
         float angle;
@@ -15,7 +15,7 @@ namespace SmoothLineExamples
         void Update()
         {
             angle = Time.deltaTime * speed;
-            Vector3 closestPoint = Utility.ClosestPointOnLineSegment(smoothLine.Nodes[1], smoothLine.Nodes[0], smoothLine.Nodes[2]);
+            Vector3 closestPoint = SLUtility.ClosestPointOnLineSegment(smoothLine.Nodes[1], smoothLine.Nodes[0], smoothLine.Nodes[2]);
             Vector3 axis = smoothLine.Nodes[2] - smoothLine.Nodes[0];
             Vector3 newPoint = closestPoint + Quaternion.AngleAxis(speed, axis) * (smoothLine.Nodes[1] - closestPoint);
 

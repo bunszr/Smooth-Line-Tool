@@ -1,5 +1,5 @@
 using UnityEngine;
-using SmoothLineCreation;
+using SmoothLineTool;
 
 
 namespace SmoothLineExamples
@@ -10,7 +10,7 @@ namespace SmoothLineExamples
     [ExecuteInEditMode]
     public class PathPlacer : MonoBehaviour
     {
-        public SmoothLine smoothLine;
+        public SLSmoothLine smoothLine;
         public int numObject = 20;
         public float radius = .5f;
 
@@ -18,7 +18,7 @@ namespace SmoothLineExamples
 
         public void Init()
         {
-            smoothLine = GetComponent<SmoothLine>();
+            smoothLine = GetComponent<SLSmoothLine>();
         }
 
         private void OnDrawGizmosSelected()

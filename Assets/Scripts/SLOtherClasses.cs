@@ -1,13 +1,13 @@
 using UnityEngine;
 
-namespace SmoothLineCreation
+namespace SmoothLineTool
 {
-    public static class MouseUtility
+    public static class SLMouseUtility
     {
-        public static Vector3 GetMousePosWithMoveSpace(Ray ray, Vector2 guiMousePos, MovingSpace pathSpace, float planeHeight)
+        public static Vector3 GetMousePosWithMoveSpace(Ray ray, Vector2 guiMousePos, SLMovingSpace pathSpace, float planeHeight)
         {
             float dst = 0;
-            if (pathSpace == MovingSpace.XY)
+            if (pathSpace == SLMovingSpace.XY)
             {
                 dst = (planeHeight - ray.origin.z) / ray.direction.z;
                 return ray.origin + ray.direction * dst;
@@ -18,7 +18,7 @@ namespace SmoothLineCreation
     }
 
 
-    public static class Utility
+    public static class SLUtility
     {
         public static Vector3 ToRound(this Vector3 v3, float mul)
         {
@@ -61,13 +61,13 @@ namespace SmoothLineCreation
 
 
     [System.Serializable]
-    public struct PathInfo
+    public struct SLPathInfo
     {
         public float percent;
         public float distance;
         public int smoothIndex;
 
-        public PathInfo(float percent, float distance, int smoothIndex)
+        public SLPathInfo(float percent, float distance, int smoothIndex)
         {
             this.percent = percent;
             this.distance = distance;
@@ -75,6 +75,6 @@ namespace SmoothLineCreation
         }
     }
 
-    public enum MovingSpace { XY = 0, XZ = 1 }
-    public enum MoveType { Stop, Loop, Reverse, None }
+    public enum SLMovingSpace { XY = 0, XZ = 1 }
+    public enum SLMoveType { Stop, Loop, Reverse, None }
 }
